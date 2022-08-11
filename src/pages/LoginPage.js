@@ -40,6 +40,7 @@ function LoginPage() {
   const onSubmit = async (data) => {
     const from = location.state?.from?.pathname || "/";
     let { email, password } = data;
+    console.log("auth", auth);
     try {
       await auth.login({ email, password }, () => {
         navigate(from, { replace: true });
@@ -103,7 +104,7 @@ function LoginPage() {
           variant="contained"
           loading={isSubmiting}
         >
-          Login..
+          Login
         </LoadingButton>
       </FormProvider>
     </Container>
