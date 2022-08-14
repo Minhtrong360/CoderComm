@@ -59,7 +59,8 @@ const reducer = (state, action) => {
         twitterLink,
         friendCount,
         postCount,
-      } = action.payload;
+      } = action.payload.data;
+
       return {
         ...state,
         user: {
@@ -133,8 +134,11 @@ function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (updatedProfile)
+    console.log("5");
+    if (updatedProfile) {
+      console.log("6");
       dispatch({ type: UPDATE_PROFILE, payload: updatedProfile });
+    }
   }, [updatedProfile]);
 
   const login = async ({ email, password }, callback) => {

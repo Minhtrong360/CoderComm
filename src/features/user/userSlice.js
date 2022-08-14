@@ -58,6 +58,7 @@ export const updateUserProfile =
     twitterLink,
   }) =>
   async (dispatch) => {
+    console.log("2");
     dispatch(slice.actions.startLoading());
     try {
       const data = {
@@ -78,7 +79,9 @@ export const updateUserProfile =
         data.avatarUrl = imageUrl;
       }
       const response = await apiService.put(`/users/${userId}`, data);
+      console.log("3");
       dispatch(slice.actions.updateUserProfileSuccess(response.data));
+      console.log("4");
       toast.success("Update Profile successfully");
     } catch (error) {
       dispatch(slice.actions.hasError(error.message));

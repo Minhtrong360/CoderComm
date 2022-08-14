@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import apiService from "../../app/apiService";
 import { POSTS_PER_PAGE } from "../../app/config";
 import { cloudinaryUpload } from "../../utils/cloudinary";
-// import { getCurrentUserProfile } from "../user/userSlice";
+import { getCurrentUserProfile } from "../user/userSlice";
 
 const initialState = {
   isLoading: false,
@@ -35,6 +35,7 @@ const slice = createSlice({
       state.error = null;
 
       const { posts, count } = action.payload;
+      console.log("delete post 3", posts);
       posts.forEach((post) => {
         state.postsById[post._id] = post;
         if (!state.currentPagePosts.includes(post._id))
@@ -46,8 +47,8 @@ const slice = createSlice({
     createPostSuccess(state, action) {
       state.isLoading = false;
       state.error = null;
-      const newPost = action.payload.data;
-      console.log("11111", newPost);
+      const newPost = action.payload;
+
       if (state.currentPagePosts.length % POSTS_PER_PAGE === 0) {
         state.currentPagePosts.pop();
         state.postsById[newPost._id] = newPost;
@@ -94,9 +95,10 @@ export const createPost =
         content,
         image: imageUrl,
       });
+      console.log("create post OK", response);
       dispatch(slice.actions.createPostSuccess(response.data));
       toast.success("Post successfully");
-      // dispatch(getCurrentUserProfile());
+      dispatch(getCurrentUserProfile());
     } catch (error) {
       dispatch(slice.actions.hasError(error.message));
       toast.error(error.message);
@@ -125,15 +127,25 @@ export const sendPostReaction =
     }
   };
 
-export const deletePosts =
-  ({ userId, page = 1, postId }) =>
+export const deletePost =
+  ({ postId, userId, page = 1, limit = POSTS_PER_PAGE }) =>
   async (dispatch) => {
     dispatch(slice.actions.startLoading());
     try {
       const response = await apiService.delete(`/posts/${postId}`);
+      console.log("delete post 1", response);
 
-      dispatch(slice.actions.resetPosts());
-      dispatch(slice.actions.getPostsSuccess(response.data.data));
+      const params = { page, limit };
+      const responseNew = await apiService.get(`/posts/user/${userId}`, {
+        params,
+      });
+      console.log("delete post 2", responseNew);
+      dispatch(slice.actions.getPostsSuccess(responseNew.data.data));
+
+      // dispatch(slice.actions.deletePostSuccess(response.data));
+      toast.success("Delete post successfully");
+
+      // dispatch(getCurrentUserProfile());
     } catch (error) {
       dispatch(slice.actions.hasError(error.message));
       toast.error(error.message);

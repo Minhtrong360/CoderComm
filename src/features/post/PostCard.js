@@ -8,6 +8,8 @@ import {
   Typography,
   CardHeader,
   IconButton,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { fDate } from "../../utils/formatTime";
@@ -16,8 +18,58 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import PostReaction from "./PostReaction";
 import CommentList from "../comment/CommentList";
 import CommentForm from "../comment/CommentForm";
+import { useDispatch } from "react-redux";
+import { deletePost } from "./postSlice";
 
-function PostCard({ post }) {
+function PostCard({ post, userId }) {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const dispatch = useDispatch();
+  console.log("object 1", post);
+  const isMenuOpen = Boolean(anchorEl);
+
+  const handleProfileMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+  const handleDelete = () => {
+    setAnchorEl(null);
+
+    dispatch(deletePost({ postId: post._id, userId }));
+  };
+  const handleEdit = () => {
+    setAnchorEl(null);
+  };
+
+  const menuId = "primary-search-account-menu";
+  const renderMenu = (
+    <Menu
+      anchorEl={anchorEl}
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "right",
+      }}
+      id={menuId}
+      keepMounted
+      transformOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
+      open={isMenuOpen}
+      onClose={handleMenuClose}
+    >
+      <MenuItem onClick={handleEdit} sx={{ mx: 1 }}>
+        Edit
+      </MenuItem>
+
+      <MenuItem onClick={handleDelete} sx={{ mx: 1 }}>
+        Delete
+      </MenuItem>
+    </Menu>
+  );
+
   return (
     <Card>
       <CardHeader
@@ -45,9 +97,12 @@ function PostCard({ post }) {
           </Typography>
         }
         action={
-          <IconButton>
-            <MoreVertIcon sx={{ fontSize: 30 }} />
-          </IconButton>
+          <Box>
+            <IconButton aria-label="Example" onClick={handleProfileMenuOpen}>
+              <MoreVertIcon sx={{ fontSize: 30 }} />
+            </IconButton>
+            {renderMenu}
+          </Box>
         }
       />
 
