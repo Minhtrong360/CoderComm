@@ -35,7 +35,6 @@ const slice = createSlice({
       state.error = null;
 
       const { posts, count } = action.payload;
-      console.log("delete post 3", posts);
       posts.forEach((post) => {
         state.postsById[post._id] = post;
         if (!state.currentPagePosts.includes(post._id))
@@ -48,9 +47,15 @@ const slice = createSlice({
       state.isLoading = false;
       state.error = null;
       const newPost = action.payload;
-
+      console.log("object 2 trc xóa");
       if (state.currentPagePosts.length % POSTS_PER_PAGE === 0) {
+        console.log("object 2 sau xóa 1");
         state.currentPagePosts.pop();
+        state.postsById[newPost._id] = newPost;
+        state.currentPagePosts.unshift(newPost._id);
+      }
+      if (state.currentPagePosts.length < POSTS_PER_PAGE) {
+        console.log("object 2 sau xóa 2");
         state.postsById[newPost._id] = newPost;
         state.currentPagePosts.unshift(newPost._id);
       }
@@ -61,6 +66,38 @@ const slice = createSlice({
       state.error = null;
       const { postId, reactions } = action.payload;
       state.postsById[postId].reactions = reactions;
+    },
+
+    removePostSuccess(state, action) {
+      state.isLoading = false;
+      state.error = null;
+      const { postId } = action.payload;
+
+      const context = state.currentPagePosts.find((post) => post === postId);
+      const index = state.currentPagePosts.indexOf(context);
+
+      delete state.postsById[postId];
+
+      state.currentPagePosts.splice(index, 1);
+      state.totalPosts -= 1;
+    },
+    removePostNotSuccess(state, action) {
+      state.isLoading = false;
+      state.error = null;
+    },
+
+    editPostSuccess(state, action) {
+      state.isLoading = false;
+      state.error = null;
+      const { postId } = action.payload;
+
+      const context = state.currentPagePosts.find((post) => post === postId);
+      const index = state.currentPagePosts.indexOf(context);
+
+      delete state.postsById[postId];
+
+      state.currentPagePosts.splice(index, 1);
+      state.totalPosts -= 1;
     },
   },
 });
@@ -78,7 +115,7 @@ export const getPosts =
       });
 
       if (page === 1) dispatch(slice.actions.resetPosts());
-      dispatch(slice.actions.getPostsSuccess(response.data.data));
+      dispatch(slice.actions.getPostsSuccess(response.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error.message));
       toast.error(error.message);
@@ -132,20 +169,32 @@ export const deletePost =
   async (dispatch) => {
     dispatch(slice.actions.startLoading());
     try {
-      const response = await apiService.delete(`/posts/${postId}`);
-      console.log("delete post 1", response);
+      let text = "Do you want to delete it?";
+      if (window.confirm(text) === true) {
+        const response = await apiService.delete(`/posts/${postId}`);
+        dispatch(slice.actions.removePostSuccess({ ...response.data, postId }));
+        toast.success("Delete post successfully");
+      } else {
+        dispatch(slice.actions.removePostNotSuccess());
+      }
 
-      const params = { page, limit };
-      const responseNew = await apiService.get(`/posts/user/${userId}`, {
-        params,
-      });
-      console.log("delete post 2", responseNew);
-      dispatch(slice.actions.getPostsSuccess(responseNew.data.data));
+      dispatch(getCurrentUserProfile());
+    } catch (error) {
+      dispatch(slice.actions.hasError(error.message));
+      toast.error(error.message);
+    }
+  };
 
-      // dispatch(slice.actions.deletePostSuccess(response.data));
+export const editPost =
+  ({ postId, userId, page = 1, limit = POSTS_PER_PAGE }) =>
+  async (dispatch) => {
+    dispatch(slice.actions.startLoading());
+    try {
+      const response = await apiService.put(`/posts/${postId}`);
+      dispatch(slice.actions.editPostSuccess({ ...response.data, postId }));
       toast.success("Delete post successfully");
 
-      // dispatch(getCurrentUserProfile());
+      dispatch(getCurrentUserProfile());
     } catch (error) {
       dispatch(slice.actions.hasError(error.message));
       toast.error(error.message);

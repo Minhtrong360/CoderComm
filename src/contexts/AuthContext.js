@@ -59,7 +59,7 @@ const reducer = (state, action) => {
         twitterLink,
         friendCount,
         postCount,
-      } = action.payload.data;
+      } = action.payload;
 
       return {
         ...state,
@@ -109,7 +109,7 @@ function AuthProvider({ children }) {
         if (accessToken && isValidToken(accessToken)) {
           setsession(accessToken);
           const response = await apiService.get("/users/me");
-          const user = response.data.data;
+          const user = response.data;
 
           dispatch({
             type: INITIALIZE,
@@ -144,7 +144,7 @@ function AuthProvider({ children }) {
   const login = async ({ email, password }, callback) => {
     const response = await apiService.post("/auth/login", { email, password });
     console.log("response in Login", response);
-    const { user, accessToken } = response.data.data;
+    const { user, accessToken } = response.data;
     console.log("accessToken in Login", accessToken);
     setsession(accessToken);
     dispatch({
@@ -164,7 +164,7 @@ function AuthProvider({ children }) {
 
   const register = async ({ name, email, password }, callback) => {
     const respone = await apiService.post("/users", { name, email, password });
-    const { user, accessToken } = respone.data.data;
+    const { user, accessToken } = respone.data;
 
     setsession(accessToken);
     dispatch({

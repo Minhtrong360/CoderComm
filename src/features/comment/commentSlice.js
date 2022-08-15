@@ -51,6 +51,25 @@ const slice = createSlice({
       const { commentId, reactions } = action.payload;
       state.commentsById[commentId].reactions = reactions;
     },
+    removeCommentSuccess(state, action) {
+      state.isLoading = false;
+      state.error = null;
+      const { commentId } = action.payload;
+
+      // const context = state.commentsByPost.find(
+      //   (comment) => (comment = state.commentsById[commentId])
+      // );
+      // console.log("object 2", context);
+
+      delete state.commentsById[commentId];
+      // state.totalCommentsByPosts[commentId] -= 1;
+
+      // console.log("object", context);
+    },
+    removeCommentNotSuccess(state, action) {
+      state.isLoading = false;
+      state.error = null;
+    },
   },
 });
 
@@ -65,13 +84,12 @@ export const getComments =
         page: page,
         limit: limit,
       };
-
       const response = await apiService.get(`/posts/${postId}/comments`, {
         params,
       });
       dispatch(
         slice.actions.getCommentsSuccess({
-          ...response.data.data,
+          ...response.data,
           postId,
           page,
         })
@@ -112,9 +130,29 @@ export const sendCommentReaction =
       dispatch(
         slice.actions.sendCommentReactionSuccess({
           commentId,
-          reactions: response.data.data,
+          reactions: response.data,
         })
       );
+    } catch (error) {
+      dispatch(slice.actions.hasError(error.message));
+      toast.error(error.message);
+    }
+  };
+
+export const deleteComment =
+  ({ commentId }) =>
+  async (dispatch) => {
+    dispatch(slice.actions.startLoading());
+    try {
+      console.log("comment delete", commentId);
+      let text = "Do you want to delete it?";
+      if (window.confirm(text) === true) {
+        const response = await apiService.delete(`/comments/${commentId}`);
+        dispatch(slice.actions.removeCommentSuccess({ commentId }));
+        toast.success("Delete comment successfully");
+      } else {
+        dispatch(slice.actions.removeCommentNotSuccess());
+      }
     } catch (error) {
       dispatch(slice.actions.hasError(error.message));
       toast.error(error.message);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   Box,
   Link,
@@ -19,12 +19,15 @@ import PostReaction from "./PostReaction";
 import CommentList from "../comment/CommentList";
 import CommentForm from "../comment/CommentForm";
 import { useDispatch } from "react-redux";
-import { deletePost } from "./postSlice";
+import { deletePost, editPost } from "./postSlice";
 
 function PostCard({ post, userId }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  // const [editing, setEditing] = React.useState(false);
   const dispatch = useDispatch();
-  console.log("object 1", post);
+
+  const edit = useRef();
+
   const isMenuOpen = Boolean(anchorEl);
 
   const handleProfileMenuOpen = (event) => {
@@ -41,7 +44,18 @@ function PostCard({ post, userId }) {
   };
   const handleEdit = () => {
     setAnchorEl(null);
+
+    console.log("mai nghỉ", edit);
+    dispatch(editPost({ postId: post._id, userId }));
   };
+
+  // const e = (editing) => {
+  //   if (editing) {
+  //     <Input value={1}></Input>;
+  //   } else {
+  //     <Typography ref={edit}>{post.content}</Typography>;
+  //   }
+  // };
 
   const menuId = "primary-search-account-menu";
   const renderMenu = (
@@ -107,7 +121,8 @@ function PostCard({ post, userId }) {
       />
 
       <Stack spacing={2} sx={{ p: 3 }}>
-        <Typography>{post.content}</Typography>
+        {/* {e(editing)} */}
+        <Typography ref={edit}>{post.content}</Typography>
 
         {post.image && (
           <Box
