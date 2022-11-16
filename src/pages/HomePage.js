@@ -12,6 +12,7 @@ import { Box, Card, Container, Tab, Tabs } from "@mui/material";
 import { capitalCase } from "change-case";
 import ProfileCover from "../features/user/ProfileCover";
 import { styled } from "@mui/material/styles";
+import SentRequest from "../features/friend/SentRequest";
 
 const TabsWrapperStyle = styled("div")(({ theme }) => ({
   zIndex: 9,
@@ -47,6 +48,11 @@ function Homepage() {
       value: "requests",
       icon: <ContactMailIcon sx={{ fontSize: 24 }} />,
       component: <FriendRequests />,
+    },
+    {
+      value: "sent_request",
+      icon: <ContactMailIcon sx={{ fontSize: 24 }} />,
+      component: <SentRequest />,
     },
     {
       value: "add_friend",

@@ -1,23 +1,44 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import { Stack, Avatar, TextField, IconButton } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 
 import useAuth from "../../hooks/useAuth";
-import { useDispatch } from "react-redux";
-import { createComment } from "./commentSlice";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
+import { createComment, updateComment } from "./commentSlice";
 
-function CommentForm({ postId }) {
+function CommentForm({ postId, commentID, setIsEdit, isEdit }) {
+  const { commentsById } = useSelector(
+    (state) => ({
+      commentsById: state.comment.commentsById,
+    }),
+    shallowEqual
+  );
+
   const { user } = useAuth();
-  const [content, setContent] = useState("");
+  let text = "";
+  if (commentsById && commentID) {
+    text = commentsById[commentID].content;
+  }
+
+  const [content, setContent] = useState(text);
   const dispatch = useDispatch();
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    dispatch(createComment({ postId, content }));
-    setContent("");
+    if (!isEdit) {
+      e.preventDefault();
+      dispatch(createComment({ postId, content }));
+      setContent("");
+      return;
+    }
+    if (isEdit) {
+      e.preventDefault();
+      dispatch(updateComment({ content, commentID, postId }));
+      setContent("");
+      setIsEdit(false);
+      return;
+    }
   };
-
   return (
     <form onSubmit={handleSubmit}>
       <Stack direction="row" alignItems="center">

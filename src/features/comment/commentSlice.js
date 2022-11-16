@@ -1,7 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import apiService from "../../app/apiService";
 import { COMMENTS_PER_POST } from "../../app/config";
+import { getCurrentUserProfile } from "../user/userSlice";
 
 const initialState = {
   isLoading: false,
@@ -54,21 +57,32 @@ const slice = createSlice({
     removeCommentSuccess(state, action) {
       state.isLoading = false;
       state.error = null;
-      const { commentId } = action.payload;
+      const { commentId, postId } = action.payload;
 
-      // const context = state.commentsByPost.find(
-      //   (comment) => (comment = state.commentsById[commentId])
-      // );
-      // console.log("object 2", context);
-
+      // Xóa commentById theo commentId
       delete state.commentsById[commentId];
-      // state.totalCommentsByPosts[commentId] -= 1;
-
-      // console.log("object", context);
+      // Xóa comment trong commentByPost theo PostID dựa vào commentId
+      const comment = state.commentsByPost[postId].filter(
+        (comment) => comment !== commentId
+      );
+      state.commentsByPost = { ...state.commentsByPost, [postId]: comment };
+      // totalCommentByPost - 1
+      state.totalCommentsByPost[postId] -= 1;
+      // currentPageByPost - 1
+      if (state.currentPageByPost % 3 === 1) {
+        state.currentPageByPost[postId] -= 1;
+      }
     },
     removeCommentNotSuccess(state, action) {
       state.isLoading = false;
       state.error = null;
+    },
+
+    updateCommentSuccess(state, action) {
+      state.isLoading = false;
+      state.error = null;
+      const newComment = action.payload;
+      state.commentsById[newComment._id] = newComment;
     },
   },
 });
@@ -140,19 +154,36 @@ export const sendCommentReaction =
   };
 
 export const deleteComment =
-  ({ commentId }) =>
+  ({ commentId, postId, page }) =>
   async (dispatch) => {
     dispatch(slice.actions.startLoading());
     try {
-      console.log("comment delete", commentId);
       let text = "Do you want to delete it?";
       if (window.confirm(text) === true) {
         const response = await apiService.delete(`/comments/${commentId}`);
-        dispatch(slice.actions.removeCommentSuccess({ commentId }));
+        dispatch(slice.actions.removeCommentSuccess({ commentId, postId }));
         toast.success("Delete comment successfully");
       } else {
         dispatch(slice.actions.removeCommentNotSuccess());
       }
+    } catch (error) {
+      dispatch(slice.actions.hasError(error.message));
+      toast.error(error.message);
+    }
+  };
+
+export const updateComment =
+  ({ content, commentID, postId }) =>
+  async (dispatch) => {
+    dispatch(slice.actions.startLoading());
+    try {
+      let data = { content };
+      const response = await apiService.put(`/comments/${commentID}`, data);
+
+      toast.success("Update comment successfully");
+
+      dispatch(slice.actions.updateCommentSuccess(response.data));
+      dispatch(getCurrentUserProfile());
     } catch (error) {
       dispatch(slice.actions.hasError(error.message));
       toast.error(error.message);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Avatar,
   Box,
@@ -14,11 +14,12 @@ import CommentReaction from "./CommentReaction";
 import { useDispatch } from "react-redux";
 import { deleteComment } from "./commentSlice";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import CommentForm from "./CommentForm";
 
-function CommentCard({ comment }) {
+function CommentCard({ comment, onDelete, postId }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const dispatch = useDispatch();
-
+  const [isEdit, setIsEdit] = useState(false);
   const isMenuOpen = Boolean(anchorEl);
 
   const handleProfileMenuOpen = (event) => {
@@ -30,10 +31,12 @@ function CommentCard({ comment }) {
   };
   const handleDelete = () => {
     setAnchorEl(null);
-
-    dispatch(deleteComment({ commentId: comment._id }));
+    onDelete(comment._id);
   };
+
   const handleEdit = () => {
+    console.log("edit commnet");
+    setIsEdit(true);
     setAnchorEl(null);
   };
 
@@ -81,9 +84,23 @@ function CommentCard({ comment }) {
             {fDate(comment.createdAt)}
           </Typography>
         </Stack>
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          {comment.content}
-        </Typography>
+
+        {isEdit && (
+          <CommentForm
+            postId={postId}
+            commentID={comment._id}
+            isEdit={isEdit}
+            setIsEdit={setIsEdit}
+            handleEdit={handleEdit}
+          />
+        )}
+
+        {isEdit === false && (
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            {comment.content}
+          </Typography>
+        )}
+
         <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <CommentReaction comment={comment} />
         </Box>

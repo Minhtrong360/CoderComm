@@ -17,7 +17,7 @@ function PostList({ userId }) {
 
   useEffect(() => {
     if (userId) dispatch(getPosts({ userId, page }));
-  }, [dispatch, userId, page]);
+  }, [dispatch, userId, page, totalPosts]);
 
   return (
     <>

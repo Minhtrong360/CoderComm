@@ -47,9 +47,8 @@ const slice = createSlice({
       state.isLoading = false;
       state.error = null;
       const newPost = action.payload;
-      console.log("object 2 trc xóa");
+
       if (state.currentPagePosts.length % POSTS_PER_PAGE === 0) {
-        console.log("object 2 sau xóa 1");
         state.currentPagePosts.pop();
         state.postsById[newPost._id] = newPost;
         state.currentPagePosts.unshift(newPost._id);
@@ -86,7 +85,7 @@ const slice = createSlice({
       state.error = null;
     },
 
-    editPostSuccess(state, action) {
+    updatePostSuccess(state, action) {
       state.isLoading = false;
       state.error = null;
       const { postId } = action.payload;
@@ -132,7 +131,7 @@ export const createPost =
         content,
         image: imageUrl,
       });
-      console.log("create post OK", response);
+
       dispatch(slice.actions.createPostSuccess(response.data));
       toast.success("Post successfully");
       dispatch(getCurrentUserProfile());
@@ -152,10 +151,11 @@ export const sendPostReaction =
         targetId: postId,
         emoji,
       });
+      console.log("hiện like lúc get", response);
       dispatch(
         slice.actions.sendPostReactionSuccess({
           postId,
-          reactions: response.data.data,
+          reactions: response.data,
         })
       );
     } catch (error) {
@@ -185,14 +185,17 @@ export const deletePost =
     }
   };
 
-export const editPost =
-  ({ postId, userId, page = 1, limit = POSTS_PER_PAGE }) =>
+export const updatePost =
+  ({ postId, content, image }) =>
   async (dispatch) => {
     dispatch(slice.actions.startLoading());
     try {
-      const response = await apiService.put(`/posts/${postId}`);
-      dispatch(slice.actions.editPostSuccess({ ...response.data, postId }));
-      toast.success("Delete post successfully");
+      const imageUrl = await cloudinaryUpload(image);
+      const data = { content, image: imageUrl };
+      const response = await apiService.put(`/posts/${postId}`, data);
+      dispatch(slice.actions.updatePostSuccess(response.data));
+
+      toast.success("Update post successfully");
 
       dispatch(getCurrentUserProfile());
     } catch (error) {

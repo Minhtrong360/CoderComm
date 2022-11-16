@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   Box,
   Link,
@@ -17,16 +17,16 @@ import { fDate } from "../../utils/formatTime";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import PostReaction from "./PostReaction";
 import CommentList from "../comment/CommentList";
+import PostForm from "./PostForm";
 import CommentForm from "../comment/CommentForm";
 import { useDispatch } from "react-redux";
-import { deletePost, editPost } from "./postSlice";
+import { deletePost } from "./postSlice";
 
 function PostCard({ post, userId }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   // const [editing, setEditing] = React.useState(false);
   const dispatch = useDispatch();
-
-  const edit = useRef();
+  const [isEdit, setIsEdit] = useState(false);
 
   const isMenuOpen = Boolean(anchorEl);
 
@@ -44,18 +44,8 @@ function PostCard({ post, userId }) {
   };
   const handleEdit = () => {
     setAnchorEl(null);
-
-    console.log("mai nghỉ", edit);
-    dispatch(editPost({ postId: post._id, userId }));
+    setIsEdit(true);
   };
-
-  // const e = (editing) => {
-  //   if (editing) {
-  //     <Input value={1}></Input>;
-  //   } else {
-  //     <Typography ref={edit}>{post.content}</Typography>;
-  //   }
-  // };
 
   const menuId = "primary-search-account-menu";
   const renderMenu = (
@@ -121,8 +111,15 @@ function PostCard({ post, userId }) {
       />
 
       <Stack spacing={2} sx={{ p: 3 }}>
-        {/* {e(editing)} */}
-        <Typography ref={edit}>{post.content}</Typography>
+        {isEdit === true && (
+          <PostForm
+            post={post}
+            isEdit={isEdit}
+            setIsEdit={setIsEdit}
+            // handleEdit={handleEdit}
+          />
+        )}
+        {isEdit === false && <Typography>{post.content}</Typography>}
 
         {post.image && (
           <Box
@@ -137,7 +134,7 @@ function PostCard({ post, userId }) {
           </Box>
         )}
 
-        <PostReaction post={post} />
+        <PostReaction post={post} userId={userId} />
         <CommentList postId={post._id} />
         <CommentForm postId={post._id} />
       </Stack>

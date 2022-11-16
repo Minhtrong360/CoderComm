@@ -1,22 +1,32 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { FormProvider, FTextField, FUploadImage } from "../../components/form";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { Card, Stack, alpha, Box } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
-import { useDispatch, useSelector } from "react-redux";
-import { createPost } from "./postSlice";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
+import { createPost, updatePost } from "./postSlice";
 
 const yupSchema = Yup.object().shape({
   content: Yup.string().required("Content is required"),
 });
-const defaultValues = {
-  content: "",
-  image: "",
-};
 
-function PostForm() {
+function PostForm({ post, isEdit, setIsEdit }) {
+  let textEdit;
+  let imageEdit;
+  if (isEdit) {
+    textEdit = post.content;
+    imageEdit = post.image;
+  } else {
+    textEdit = "";
+    imageEdit = "";
+  }
+  const defaultValues = {
+    content: textEdit,
+    image: imageEdit,
+  };
+
   const methods = useForm({
     resolver: yupResolver(yupSchema),
     defaultValues,
@@ -30,7 +40,15 @@ function PostForm() {
   const dispatch = useDispatch();
   const { isLoading } = useSelector((state) => state.post);
   const onSubmit = (data) => {
-    dispatch(createPost(data)).then(() => reset());
+    if (isEdit) {
+      let { content, image } = data;
+      dispatch(updatePost({ postId: post._id, content, image }));
+      setIsEdit(false);
+      return;
+    } else {
+      dispatch(createPost(data)).then(() => reset());
+      return;
+    }
   };
 
   const handleDrop = useCallback(
@@ -52,6 +70,7 @@ function PostForm() {
         <Stack spacing={2}>
           <FTextField
             name="content"
+            // value={post.content}
             multiline
             fullWidth
             rows={4}

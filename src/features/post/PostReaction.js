@@ -1,11 +1,12 @@
 import { IconButton, Stack, Typography } from "@mui/material";
 import ThumbDownAltRoundedIcon from "@mui/icons-material/ThumbDownAltRounded";
 import ThumbUpRoundedIcon from "@mui/icons-material/ThumbUpRounded";
-import React from "react";
-import { useDispatch } from "react-redux";
-import { sendPostReaction } from "./postSlice";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getPosts, sendPostReaction } from "./postSlice";
+import { useEffect } from "react";
 
-function PostReaction({ post }) {
+function PostReaction({ post, userId }) {
   const dispatch = useDispatch();
 
   const handleClick = (emoji) => {

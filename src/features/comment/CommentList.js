@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 
 import { Pagination, Stack, Typography } from "@mui/material";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
-import { getComments } from "./commentSlice";
+import { deleteComment, getComments, editComment } from "./commentSlice";
 import CommentCard from "./CommentCard";
 import LoadingScreen from "../../components/LoadingScreen";
 import { COMMENTS_PER_POST } from "../../app/config";
@@ -27,18 +27,30 @@ function CommentList({ postId }) {
   const totalPages = Math.ceil(totalComments / COMMENTS_PER_POST);
   const dispatch = useDispatch();
 
+  const onDelete = (commentId) => {
+    dispatch(
+      deleteComment({ commentId: commentId, postId, page: currentPage })
+    );
+  };
+
   useEffect(() => {
-    if (postId) dispatch(getComments({ postId }));
-  }, [postId, dispatch]);
+    if ({ postId, totalComments }) dispatch(getComments({ postId }));
+  }, [postId, totalComments, dispatch]);
 
   let renderComments;
 
   if (commentsByPost) {
     const comments = commentsByPost.map((commentId) => commentsById[commentId]);
+
     renderComments = (
       <Stack spacing={1.5}>
         {comments.map((comment) => (
-          <CommentCard key={comment._id} comment={comment} />
+          <CommentCard
+            key={comment._id}
+            comment={comment}
+            onDelete={onDelete}
+            postId={postId}
+          />
         ))}
       </Stack>
     );
