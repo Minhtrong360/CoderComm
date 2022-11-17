@@ -82,7 +82,9 @@ const slice = createSlice({
       state.isLoading = false;
       state.error = null;
       const newComment = action.payload;
+      let author = state.commentsById[newComment._id].author;
       state.commentsById[newComment._id] = newComment;
+      state.commentsById[newComment._id].author = author;
     },
   },
 });

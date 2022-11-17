@@ -35,7 +35,7 @@ function CommentCard({ comment, onDelete, postId }) {
   };
 
   const handleEdit = () => {
-    console.log("edit commnet");
+    console.log("edit commnet", comment);
     setIsEdit(true);
     setAnchorEl(null);
   };
@@ -70,6 +70,7 @@ function CommentCard({ comment, onDelete, postId }) {
   return (
     <Stack direction="row" spacing={2}>
       <Avatar alt={comment.author?.name} src={comment.author?.avatarUrl} />
+
       <Paper sx={{ p: 1.5, flexGrow: 1, bgcolor: "background.neutral" }}>
         <Stack
           direction="row"
